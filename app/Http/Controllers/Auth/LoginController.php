@@ -13,16 +13,9 @@ class LoginController extends Controller
     /**
      * Where to redirect users after login.
      *
-     * @var string
+     * 
      */
-    protected function redirectTo()
-{
-    if (auth()->user()->role === 'admin') {
-        return '/admin/dashboard'; // Redirection des admins
-    }
-    return '/mobilite'; // Redirection des utilisateurs normaux
-}
-
+    
 
     /**
      * Create a new controller instance.
@@ -38,5 +31,32 @@ class LoginController extends Controller
     /**
      * Redirection après connexion selon le rôle.
      */
+
+     protected function authenticated(Request $request, $user)
+     {
+         if ($user->role === 'admin') {
+             auth()->logout(); // Déconnecter toute autre session active
+             auth('admin')->login($user); // Forcer la connexion en tant qu'admin
+             return redirect()->route('admin.dashboard'); 
+         }
+     
+         auth()->logout(); // Déconnecter toute autre session active
+         auth('web')->login($user); // Forcer la connexion en tant qu'utilisateur normal
+         return redirect()->route('home'); 
+     }
+     public function logout(Request $request)
+     {
+         // Déconnecter les sessions des deux guards
+         auth('admin')->logout();
+         auth('web')->logout();
+     
+         // Invalider et régénérer le token de session
+         $request->session()->invalidate();
+         $request->session()->regenerateToken();
+     
+         return redirect('/');
+     }
+         
+     
     
 }

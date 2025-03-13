@@ -22,7 +22,7 @@
                             <th class="py-2 px-4 border w-40">DATE FIN</th> <!-- ✅ Élargi -->
                             <th class="py-2 px-4 border w-1/4">MOTIVATION</th> <!-- ✅ Réduit -->
                             <th class="py-2 px-4 border">JUSTIFICATIF</th>
-                            <th class="py-2 px-4 border w-32">STATUT</th> <!-- ✅ Élargi -->
+                            <th class="py-2 px-4 border w-32">STATUS</th> <!-- ✅ Élargi -->
                             <th class="py-2 px-4 border">ACTIONS</th>
                         </tr>
                     </thead>

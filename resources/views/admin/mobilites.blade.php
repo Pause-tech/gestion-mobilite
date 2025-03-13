@@ -14,7 +14,7 @@
                             <th class="py-2 px-4 border">Étudiant</th>
                             <th class="py-2 px-4 border">Pays</th>
                             <th class="py-2 px-4 border">Université</th>
-                            <th class="py-2 px-4 border">Statut</th>
+                            <th class="py-2 px-4 border">Status</th>
                             <th class="py-2 px-4 border">Actions</th>
                         </tr>
                     </thead>

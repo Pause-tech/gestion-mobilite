@@ -3,11 +3,13 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Filament\Models\Contracts\FilamentUser;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -22,9 +24,9 @@ class User extends Authenticatable
         'prenom',
         'email',
         'password',
-        'role', // Ajout du champ role
-        'phone', // Ajout du champ téléphone
-        'description', // Ajout du champ description (dashboard)
+        'role',
+        'phone',
+        'description',
         'etablissement',
     ];
 
@@ -59,5 +61,20 @@ class User extends Authenticatable
     public function isAdmin()
     {
         return $this->role === 'admin';
+    }
+
+    /**
+     * Détermine si l'utilisateur peut accéder au panneau d'administration Filament.
+     *
+     * @param \Filament\Panel $panel
+     * @return bool
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->isAdmin();
+    }
+    public function mobilites()
+    {
+        return $this->hasMany(Mobilite::class, 'user_id', 'id');
     }
 }

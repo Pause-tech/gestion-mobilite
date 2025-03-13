@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\MobiliteController;
 use App\Http\Controllers\AdminController;
+use Filament\Facades\Filament;
+use Filament\Http\Middleware\Authenticate;
 // Main route
 Route::get('/', function () {
     return view('welcome'); 
@@ -46,9 +48,12 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/mobilite/{mobilite}', [MobiliteController::class, 'update'])->name('mobilite.update');
     Route::delete('/mobilite/{mobilite}', [MobiliteController::class, 'destroy'])->name('mobilite.destroy');
 });
-Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.interface');
+Route::middleware(['auth:admin'])->group(function () {
+    Route::prefix('admin')->group(function () {
+        Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+    });
 });
+
 
 Route::fallback(function () {
     return  view('page404');

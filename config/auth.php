@@ -35,12 +35,24 @@ return [
     |
     */
 
-    'guards' => [
-        'web' => [
-            'driver' => 'session',
-            'provider' => 'users',
-        ],
+   'guards' => [
+       'web' => [
+         'driver' => 'session',
+          'provider' => 'users',
+      ],
+
+      'admin' => [ // Ajout d'un garde spécifique pour l'admin
+          'driver' => 'session',
+          'provider' => 'users',
+      ],
+ ],
+ 'providers' => [
+    'users' => [
+        'driver' => 'eloquent',
+        'model' => App\Models\User::class,
     ],
+],
+
 
     /*
     |--------------------------------------------------------------------------

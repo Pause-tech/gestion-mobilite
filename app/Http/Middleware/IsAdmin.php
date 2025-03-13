@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class AdminMiddleware
+class IsAdmin
 {
     public function handle(Request $request, Closure $next)
     {
@@ -14,7 +14,7 @@ class AdminMiddleware
             return $next($request);
         }
 
-        abort(403, 'Accès interdit - Vous devez être administrateur');
+        // Si l'utilisateur n'est pas admin, le rediriger ailleurs (par exemple, vers /mobilite)
+        return redirect('/mobilite')->with('error', 'Accès refusé. Vous devez être administrateur.');
     }
 }
-

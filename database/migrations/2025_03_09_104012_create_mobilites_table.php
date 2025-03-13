@@ -21,7 +21,7 @@ return new class extends Migration
             $table->date('date_fin')->nullable(); // Ajout direct
             $table->text('motivation');
             $table->string('justificatif')->nullable(); // Ajout direct
-            $table->string('status')->default('en attente'); // Statut : en attente, acceptée, refusée
+            $table->string('status')->default('en attente'); // Status: en attente, acceptée, refusée
             $table->text('motif_refus')->nullable(); // Ajout du champ de refus
             $table->timestamps();
         });
