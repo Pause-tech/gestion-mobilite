@@ -21,7 +21,7 @@ class AdminController extends Controller
      */
     public function mobilites()
     {
-        $mobilites = Mobilite::with('etudiant')->get();
+        $mobilites = Mobilite::with('user')->latest()->get(); // On récupère les demandes triées par date
         return view('admin.mobilites', compact('mobilites'));
     }
 
@@ -33,6 +33,8 @@ class AdminController extends Controller
         $mobilite = Mobilite::findOrFail($id);
         $mobilite->status = 'validé';
         $mobilite->save();
+
+        \Cache::forget('mobilites');
 
         return back()->with('success', 'Mobilité validée avec succès.');
     }
@@ -46,6 +48,8 @@ class AdminController extends Controller
         $mobilite->status = 'refusé';
         $mobilite->motif_refus = $request->motif_refus;
         $mobilite->save();
+        
+        \Cache::forget('mobilites');
 
         return back()->with('success', 'Mobilité refusée avec une raison.');
     }

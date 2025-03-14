@@ -17,7 +17,7 @@
 <style>
       @import url(http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css);
 @import url(http://fonts.googleapis.com/css?family=Roboto:700,400,300);
-@import url(https://raw.github.com/necolas/normalize.css/master/normalize.css);
+
 /**
 * Set up reusable colors
 */

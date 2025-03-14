@@ -1,56 +1,39 @@
 <?php
 
 namespace App\Filament\Resources;
+
 use App\Filament\Resources\MobiliteResource\Pages;
 use App\Models\Mobilite;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Filters\Filter;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Filters\SelectFilter;
 
 class MobiliteResource extends Resource
 {
     protected static ?string $model = Mobilite::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard';
+    protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
+    protected static ?string $navigationGroup = 'Gestion des Mobilités'; // Groupe du menu
 
     public static function form(Forms\Form $form): Forms\Form
     {
         return $form
             ->schema([
-                Select::make('status')
-                    ->label('Status de la demande')
+                Forms\Components\TextInput::make('pays_destination')->label('Pays'),
+                Forms\Components\TextInput::make('universite_accueil')->label('Université'),
+                Forms\Components\TextInput::make('ville')->label('Ville'),
+                Forms\Components\DatePicker::make('date_debut')->label('Date Début'),
+                Forms\Components\DatePicker::make('date_fin')->label('Date Fin'),
+                Forms\Components\Textarea::make('motivation')->label('Motivation'),
+                Forms\Components\Select::make('status')
+                    ->label('Statut')
                     ->options([
                         'en attente' => 'En attente',
                         'validé' => 'Validé',
-                        'refusé' => 'Refusé',
-                    ])
-                    ->reactive()
-                    ->afterStateUpdated(fn ($state, callable $set) => $state === 'refusé' ? $set('motif_refus', '') : null)
-                    ->required(),
-
-                Textarea::make('motif_refus')
-                    ->label('Motif du refus')
-                    ->visible(fn ($get) => $get('status') === 'refusé')
-                    ->required(fn ($get) => $get('status') === 'refusé'),
-
-                TextInput::make('user.name')
-                    ->label('Nom de l\'étudiant')
-                    ->disabled(),
-
-                TextInput::make('user.etablissement')
-                    ->label('Établissement')
-                    ->disabled(),
-
-                TextInput::make('pays_destination')
-                    ->label('Pays')
-                    ->disabled(),
+                        'refusé' => 'Refusé'
+                    ]),
+                Forms\Components\Textarea::make('motif_refus')->label('Motif du refus')->visible(fn ($get) => $get('status') === 'refusé'),
             ]);
     }
 
@@ -58,45 +41,98 @@ class MobiliteResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('user.name')->label('Étudiant')->searchable(),
-                TextColumn::make('user.etablissement')->label('Établissement')->searchable(),
-                TextColumn::make('pays_destination')->label('Pays')->searchable(),
-                TextColumn::make('status')->label('Status')->sortable(),
+                Tables\Columns\TextColumn::make('user.name')->label('Étudiant'),
+                Tables\Columns\TextColumn::make('pays_destination')->label('Pays'),
+                Tables\Columns\TextColumn::make('universite_accueil')->label('Université'),
+                Tables\Columns\TextColumn::make('ville')->label('Ville'),
+                Tables\Columns\TextColumn::make('date_debut')->label('Date Début')->date(),
+                Tables\Columns\TextColumn::make('date_fin')->label('Date Fin')->date(),
+                Tables\Columns\TextColumn::make('justificatif')
+                ->label('Justificatif')
+                ->formatStateUsing(fn ($state) => $state 
+                    ? '<a href="' . asset('storage/' . $state) . '" target="_blank" class="text-blue-500 underline">Voir</a>' 
+                    : '<span class="text-gray-500">Aucun</span>')
+                ->html(),
+                           
+                Tables\Columns\TextColumn::make('status')
+                ->label('Statut')
+                ->formatStateUsing(fn ($state) => match ($state) {
+                    'validé' => '✔ Validé',
+                    'refusé' => '✘ Refusé',
+                    'en attente' => '⏳ En attente',
+                    default => $state,
+                })
+                ->badge()
+                ->color(fn ($state) => match ($state) {
+                    'validé' => 'success',
+                    'refusé' => 'danger',
+                    'en attente' => 'warning',
+                    default => 'gray',
+                }),
+            
             ])
             ->filters([
-                Filter::make('Status')
-                    ->query(fn ($query, $data) => $query->where('status', $data))
-                    ->form([
-                        Select::make('status')
-                            ->options([
-                                'en attente' => 'En attente',
-                                'validé' => 'Validé',
-                                'refusé' => 'Refusé',
-                            ])
+                SelectFilter::make('status')
+                    ->label('Statut')
+                    ->options([
+                        'en attente' => 'En attente',
+                        'validé' => 'Validé',
+                        'refusé' => 'Refusé'
                     ]),
-                    Filter::make('Etablissement')
+            
+                SelectFilter::make('universite_accueil') // ❌ "Université" ne correspond pas à la DB
+                    ->label('Université')
+                    ->options(fn () => 
+                        \App\Models\Mobilite::whereNotNull('universite_accueil')
+                            ->distinct()
+                            ->pluck('universite_accueil', 'universite_accueil')
+                            ->toArray()
+                    ),
+            
+                SelectFilter::make('pays_destination') // ❌ "Pays" ne correspond pas à la DB
+                    ->label('Pays')
+                    ->options(fn () => 
+                        \App\Models\Mobilite::whereNotNull('pays_destination')
+                            ->distinct()
+                            ->pluck('pays_destination', 'pays_destination')
+                            ->toArray()
+                    ),
+            ])
+            
+            
+            ->actions([
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('Valider')
+                ->label('✅ Valider')
+                ->color('success')
+                ->action(function ($record) {
+                    $record->status = 'validé';
+                    $record->save();
+                    \Cache::forget('mobilites'); // Vider le cache au cas où
+                }),
+            
+                Tables\Actions\Action::make('Refuser')
+                    ->label('❌ Refuser')
+                    ->color('danger')
                     ->form([
-                        TextInput::make('etablissement'),
+                        Forms\Components\Textarea::make('motif_refus')
+                            ->label('Motif du refus')
+                            ->required()
                     ])
-                    ->query(fn ($query, $data) => $data ? $query->whereHas('user', fn($q) => $q->where('etablissement', 'like', '%' . $data['etablissement'] . '%')) : $query),
-                
-                    Filter::make('Pays')
-                    ->form([
-                        TextInput::make('pays_destination'),
-                    ])
-                    ->query(fn ($query, $data) => $data ? $query->where('pays_destination', 'like', '%' . $data['pays_destination'] . '%') : $query),
+                    ->action(function ($record, $data) {
+                        $record->status = 'refusé';
+                        $record->motif_refus = $data['motif_refus'];
+                        $record->save();
+                        \Cache::forget('mobilites'); // Vider le cache au cas où
+                    }),
                 
             ])
-            ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
+            ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
-
-    public static function getRelations(): array
-    {
-        return [];
-    }
+    
 
     public static function getPages(): array
     {
@@ -106,8 +142,9 @@ class MobiliteResource extends Resource
             'edit' => Pages\EditMobilite::route('/{record}/edit'),
         ];
     }
-    public static function canCreate(): bool
+    public static function canCreate(): bool 
     {
-    return false;
+        return false; // Désactive le bouton "New Mobilite"
     }
+        
 }

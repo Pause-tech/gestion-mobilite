@@ -52,7 +52,7 @@
                             <td class="py-2 px-4 border">
                                 @if ($mobilite->status == 'en attente')
                                     <span class="px-3 py-1 bg-yellow-500 text-white rounded-full text-xs">En attente</span>
-                                @elseif ($mobilite->status == 'validée')
+                                @elseif ($mobilite->status == 'validé')
                                     <span class="px-3 py-1 bg-green-500 text-white rounded-full text-xs">Validée</span>
                                 @else
                                     <span class="px-3 py-1 bg-red-500 text-white rounded-full text-xs">Refusée</span>
