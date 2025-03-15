@@ -18,11 +18,11 @@
                             <th class="py-2 px-4 border">PAYS</th>
                             <th class="py-2 px-4 border">UNIVERSITÉ</th>
                             <th class="py-2 px-4 border">VILLE</th>
-                            <th class="py-2 px-4 border w-32">DATE DÉBUT</th> <!-- ✅ Gardé normal -->
-                            <th class="py-2 px-4 border w-40">DATE FIN</th> <!-- ✅ Élargi -->
-                            <th class="py-2 px-4 border w-1/4">MOTIVATION</th> <!-- ✅ Réduit -->
+                            <th class="py-2 px-4 border w-32">DATE DÉBUT</th>
+                            <th class="py-2 px-4 border w-40">DATE FIN</th>
+                            <th class="py-2 px-4 border w-1/4">MOTIVATION</th>
                             <th class="py-2 px-4 border">JUSTIFICATIF</th>
-                            <th class="py-2 px-4 border w-32">STATUS</th> <!-- ✅ Élargi -->
+                            <th class="py-2 px-4 border w-32">STATUS</th>
                             <th class="py-2 px-4 border">ACTIONS</th>
                         </tr>
                     </thead>
@@ -34,7 +34,7 @@
                             <td class="py-2 px-4 border">{{ $mobilite->ville ?? 'Non renseignée' }}</td>
                             <td class="py-2 px-4 border">{{ $mobilite->date_debut ?? 'Non renseignée' }}</td>
                             <td class="py-2 px-4 border">{{ $mobilite->date_fin ?? 'Non renseignée' }}</td>
-                            <td class="py-2 px-4 border truncate w-48"> <!-- ✅ Réduction de la largeur -->
+                            <td class="py-2 px-4 border truncate w-48">
                                 {{ Str::limit($mobilite->motivation, 40, '...') }}
                                 @if(strlen($mobilite->motivation) > 40)
                                     <button onclick="showFullMotivation('{{ $mobilite->id }}')" class="text-blue-500 text-xs underline">Voir plus</button>
@@ -51,13 +51,22 @@
 
                             <td class="py-2 px-4 border">
                                 @if ($mobilite->status == 'en attente')
-                                    <span class="px-3 py-1 bg-yellow-500 text-white rounded-full text-xs">En attente</span>
+                                     <span class="px-3 py-1 bg-yellow-500 text-white rounded-full text-xs">En attente</span>
                                 @elseif ($mobilite->status == 'validé')
-                                    <span class="px-3 py-1 bg-green-500 text-white rounded-full text-xs">Validée</span>
+                                     <span class="px-3 py-1 bg-green-500 text-white rounded-full text-xs">Validée</span>
                                 @else
-                                    <span class="px-3 py-1 bg-red-500 text-white rounded-full text-xs">Refusée</span>
+                                     <span class="px-3 py-1 bg-red-500 text-white rounded-full text-xs">Refusée</span>
+                                     @if (!empty($mobilite->motif_refus))
+                                         <br>
+                                         <button onclick="openMotifModal(`{{ addslashes($mobilite->motif_refus) }}`)" 
+                                                    class="text-blue-500 underline text-xs cursor-pointer">
+                                           Voir le motif
+                                         </button>
+
+                                     @endif
                                 @endif
                             </td>
+
                             <td class="py-2 px-4 border flex gap-2 justify-center">
                                 <a href="{{ route('mobilite.edit', $mobilite) }}" class="px-3 py-1 bg-blue-500 text-white rounded text-xs">
                                     Modifier 📝
@@ -78,12 +87,53 @@
         </div>
     </div>
 
-    <script>
-        function showFullMotivation(id) {
-            let fullText = document.getElementById('fullMotivation-' + id);
-            if (fullText.classList.contains('hidden')) {
-                alert(fullText.textContent);
-            }
+<!-- MODAL Motif de Refus -->
+<div id="motifModal" class="fixed inset-0 items-center justify-center bg-gray-900 bg-opacity-50 hidden">
+    <div class="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
+        <h2 class="text-lg font-semibold text-red-600 flex items-center">
+            ❌ Refusé
+        </h2>
+        <textarea id="motifText" 
+                  class="mt-2 text-gray-700 w-full border border-gray-300 rounded p-2" 
+                  rows="4" 
+                  readonly></textarea>
+
+        <button 
+            onclick="closeMotifModal()" 
+            class="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-full"
+        >
+            Fermer
+        </button>
+    </div>
+</div>
+
+
+
+<script>
+    function openMotifModal(motif) {
+        console.log("Motif reçu:", motif); // Debugging
+
+        let motifTextElement = document.getElementById('motifText');
+        let modalElement = document.getElementById('motifModal');
+
+        if (motifTextElement && modalElement) {
+            motifTextElement.value = motif; // Met le texte dans la zone
+            modalElement.classList.remove('hidden');
+            modalElement.classList.add('flex');
+        } else {
+            console.error("Erreur: L'élément modal ou texte introuvable !");
         }
-    </script>
+    }
+
+    function closeMotifModal() {
+        let modalElement = document.getElementById('motifModal');
+        if (modalElement) {
+            modalElement.classList.add('hidden');
+            modalElement.classList.remove('flex');
+        }
+    }
+</script>
+
+
+
 </x-app-layout>
