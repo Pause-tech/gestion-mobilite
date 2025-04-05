@@ -27,7 +27,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->authGuard('admin')  // Ajoutez cette ligne
+            ->authGuard('admin') 
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -38,15 +38,16 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                //Widgets\AccountWidget::class,
+                //Widgets\FilamentInfoWidget::class,
+                \App\Filament\Widgets\MobiliteStatsWidget::class,
             ])
             ->middleware([
                 
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
-                \App\Http\Middleware\AdminSessionMiddleware::class, // Mettre en premier
+                \App\Http\Middleware\AdminSessionMiddleware::class, 
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
                 VerifyCsrfToken::class,
